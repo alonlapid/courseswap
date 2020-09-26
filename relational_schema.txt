@@ -1,0 +1,33 @@
+Student (Name,SID) 
+ID – Primary key 
+
+Course(CID,Name,Points)
+CID – Primary key 
+
+Class(CLID,CID,SymesterName,SemesterYear,Instrcutor)
+               CLID – primary key
+(CID,Time,SymesterName, SemesterYear) – unique constraint 
+CID -  a foreign key pointing to Course.CID
+
+
+Lesson (CLID,Location,Time) 
+              (CLID,Location,Time)  – primary key
+              CLID -  a foreign key pointing to Class.CLID
+
+
+Enrolment(SID,CLID,EnrolmentTime)
+             (SID,CLID,EnrolmentTime) – primary key 
+              CLID -  a foreign key pointing to Class.CID
+              SID -  a foreign key pointing to Student.SID
+
+Prerequisite( CID,MUSTCID)
+              (CID,MUSTCID) – primary key
+              CID -  a foreign key pointing to Course.CID
+              MUSTCID -  a foreign key pointing to Course.CID
+
+ExchangeReuest (RID,SID,CLID_Src, CLID_Dest,RequestTime,IsActive)
+               RID – primary key
+               (SID,CLID_Src, CLID_Dest,RequestTime) – unique constraint
+               SID -  a foreign key pointing to Student.SID
+               CLID_Src -  a foreign key pointing to Class.CLID
+               CLID_Dest -  a foreign key pointing to Class.CLID
