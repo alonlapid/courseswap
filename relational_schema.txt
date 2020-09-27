@@ -1,33 +1,66 @@
-Student (Name,SID) 
-ID – Primary key 
+create table Course
+(
+    Name varchar(256),
+    CID int primary key,Point real
+)
 
-Course(CID,Name,Points)
-CID – Primary key 
+create table Student
+(
+    SID int primary key, 
+    Name  nvarchar(256) 
+)
 
-Class(CLID,CID,SymesterName,SemesterYear,Instrcutor)
-               CLID – primary key
-(CID,Time,SymesterName, SemesterYear) – unique constraint 
-CID -  a foreign key pointing to Course.CID
+create table Class
+(
+    CLID int primary key, 
+    CID int, 
+    SemesterName  nvarchar(256) ,
+    SemesterYear  nvarchar(256), 
+    Instructor nvarchar(256),
+    FOREIGN KEY (CID) REFERENCES Course(CID),
+    UNIQUE(CID,SemesterName,SemesterYear,Instructor)
+)
+
+create table Lesson 
+(
+    CLID int ,
+    Location nvarchar(256),
+    Time datetime ,
+    FOREIGN KEY (CLID) REFERENCES Class(CLID),
+    UNIQUE(CLID,Time,Location)
+)
 
 
-Lesson (CLID,Location,Time) 
-              (CLID,Location,Time)  – primary key
-              CLID -  a foreign key pointing to Class.CLID
+create table Enrollment 
+(
+    EID int primary key IDENTITY(1,1),
+    SID int ,
+    CLID int,
+    EnrollmentTime datetime ,
+    FOREIGN KEY (SID) REFERENCES Student(SID),
+    FOREIGN KEY (CLID) REFERENCES Class(CLID),
+    UNIQUE(CLID,SID,EnrollmentTime)
+)
+
+create table Prerequisite 
+(    
+    CID int,
+    MUSTCID int,
+    primary key (CID,MUSTCID),
+    FOREIGN KEY (CID) REFERENCES Course(CID),
+    FOREIGN KEY (MUSTCID) REFERENCES Course(CID)
+)
+
+create table ExchangeRequest 
+(
+    RID int primary key IDENTITY(1,1),
+    SID int ,
+    CLID_Src int,
+    CLID_Dest int,
+    RequestTime datetime,
+    FOREIGN KEY (SID) REFERENCES Student(SID),
+    FOREIGN KEY (CLID_Src) REFERENCES Class(CLID),
+    FOREIGN KEY (CLID_Dest) REFERENCES Class(CLID)
+)
 
 
-Enrolment(SID,CLID,EnrolmentTime)
-             (SID,CLID,EnrolmentTime) – primary key 
-              CLID -  a foreign key pointing to Class.CID
-              SID -  a foreign key pointing to Student.SID
-
-Prerequisite( CID,MUSTCID)
-              (CID,MUSTCID) – primary key
-              CID -  a foreign key pointing to Course.CID
-              MUSTCID -  a foreign key pointing to Course.CID
-
-ExchangeReuest (RID,SID,CLID_Src, CLID_Dest,RequestTime,IsActive)
-               RID – primary key
-               (SID,CLID_Src, CLID_Dest,RequestTime) – unique constraint
-               SID -  a foreign key pointing to Student.SID
-               CLID_Src -  a foreign key pointing to Class.CLID
-               CLID_Dest -  a foreign key pointing to Class.CLID
