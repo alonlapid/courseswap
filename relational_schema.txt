@@ -9,7 +9,7 @@ create table Course
 (
     Name nvarchar(256),
     CID nvarchar(256) primary key,
-    Point real
+    Points real
 )
 
 create table Student
