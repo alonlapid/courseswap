@@ -44,7 +44,7 @@ create table Lesson
     CHECK(Day IN ('Sun','Mon','Tue','Wed','Thu','Fri','Sat')),
     CHECK(LengthInMin > 0 and LengthInMin < 120)
 )
-
+ 
 create table Enrollment 
 (
     EID int primary key IDENTITY(1,1),
