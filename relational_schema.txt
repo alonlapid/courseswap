@@ -37,10 +37,12 @@ create table Lesson
     Location nvarchar(256),
     Day char(10) ,
     Hour real,
+    LengthInMin int,
     FOREIGN KEY (CLID) REFERENCES Class(CLID),
     UNIQUE(CLID,Day,Hour,Location),
     CHECK(Hour >= 0.0 AND Hour < 24.0),
-    CHECK(Day IN ('Sun','Mon','Tue','Wed','Thu','Fri','Sat'))
+    CHECK(Day IN ('Sun','Mon','Tue','Wed','Thu','Fri','Sat')),
+    CHECK(LengthInMin > 0 and LengthInMin < 120)
 )
 
 create table Enrollment 
