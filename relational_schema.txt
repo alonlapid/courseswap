@@ -50,10 +50,12 @@ create table Enrollment
     EID int primary key IDENTITY(1,1),
     SID int ,
     CLID int,
+    Completed int,
     EnrollmentTime datetime ,
     FOREIGN KEY (SID) REFERENCES Student(SID),
     FOREIGN KEY (CLID) REFERENCES Class(CLID),
-    UNIQUE(CLID,SID,EnrollmentTime)
+    UNIQUE(CLID,SID,EnrollmentTime),
+    CHECK(Completed = 0 or  Completed  = 1)
 )
 
 
