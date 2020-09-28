@@ -23,10 +23,12 @@ create table Class
     CLID  int primary key, 
     CID nvarchar(256) , 
     SemesterName  nvarchar(256) ,
-    SemesterYear  nvarchar(256), 
+    SemesterYear  int, 
     Instructor nvarchar(256),
     FOREIGN KEY (CID) REFERENCES Course(CID),
-    UNIQUE(CID,SemesterName,SemesterYear,Instructor)
+    UNIQUE(CID,SemesterName,SemesterYear,Instructor),
+    CHECK(SemesterName in ('Fall','Spring','Summer')),
+    CHECK(SemesterYear > 2000 and SemesterYear < 3000)
 )
 
 create table Lesson 
