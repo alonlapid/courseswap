@@ -1,7 +1,15 @@
+create table dbuser 
+(
+  dbname nvarchar(256) primary key ,
+  SID int, 
+  FOREIGN KEY (SID) REFERENCES Student(SID)
+)
+
 create table Course
 (
-    Name varchar(256),
-    CID int primary key,Point real
+    Name nvarchar(256),
+    CID nvarchar(256) primary key,
+    Point real
 )
 
 create table Student
@@ -12,15 +20,14 @@ create table Student
 
 create table Class
 (
-    CLID int primary key, 
-    CID int, 
+    CLID  int primary key, 
+    CID nvarchar(256) , 
     SemesterName  nvarchar(256) ,
     SemesterYear  nvarchar(256), 
     Instructor nvarchar(256),
     FOREIGN KEY (CID) REFERENCES Course(CID),
     UNIQUE(CID,SemesterName,SemesterYear,Instructor)
 )
-
 
 create table Lesson 
 (
@@ -34,8 +41,6 @@ create table Lesson
     CHECK(Day IN ('Sun','Mon','Tue','Wed','Thu','Fri','Sat'))
 )
 
-
-
 create table Enrollment 
 (
     EID int primary key IDENTITY(1,1),
@@ -47,10 +52,11 @@ create table Enrollment
     UNIQUE(CLID,SID,EnrollmentTime)
 )
 
+
 create table Prerequisite 
 (    
-    CID int,
-    MUSTCID int,
+    CID nvarchar(256),
+    MUSTCID nvarchar(256),
     primary key (CID,MUSTCID),
     FOREIGN KEY (CID) REFERENCES Course(CID),
     FOREIGN KEY (MUSTCID) REFERENCES Course(CID)
@@ -67,5 +73,4 @@ create table ExchangeRequest
     FOREIGN KEY (CLID_Src) REFERENCES Class(CLID),
     FOREIGN KEY (CLID_Dest) REFERENCES Class(CLID)
 )
-
 
