@@ -74,3 +74,35 @@ insert into lesson values(10,'Zoom','Wed',12.75,75)
 insert into lesson values(11,'Zoom','Tue',16,90)
 
 insert into lesson values(12,'Zoom','Mon',11,75)
+
+
+
+insert into  Prerequisite values('CSCI054 PO','CSCI051 PO')
+
+insert into  Prerequisite values('CSCI062 PO','CSCI051 PO')
+
+insert into  Prerequisite values('CSCI101 PO','CSCI054 PO')
+insert into  Prerequisite values('CSCI101 PO','CSCI062 PO')
+
+insert into  Prerequisite values('CSCI105 PO','CSCI062 PO')
+
+insert into  Prerequisite values('CSCI133 PO','CSCI062 PO')
+
+insert into  Prerequisite values('CSCI140 PO','CSCI062 PO')
+
+insert into  Prerequisite values('CSCI151 PO','CSCI062 PO')
+
+insert into  Prerequisite values('CSCI159 PO','CSCI062 PO')
+
+insert into  Prerequisite values('CSCI181 PO','CSCI105 PO')
+
+insert into  Prerequisite values('CSCI188 PO','CSCI051 PO')
+
+insert into  Prerequisite values('CSCI190 PO','CSCI101 PO')
+
+insert into  Prerequisite values('CSCI190 PO','CSCI105 PO')
+
+insert into  Prerequisite values('CSCI190 PO','CSCI188 PO')
+
+
+
