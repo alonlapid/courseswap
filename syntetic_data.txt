@@ -39,6 +39,7 @@ insert into Class values(12,'CSCI190 PO','Fall',2020,'Greenberg, Michael')
 
 
 
+
 insert into lesson values(1,'Zoom','Mon',10,50)
 insert into lesson values(1,'Zoom','Wed',10,50)
 insert into lesson values(1,'Zoom','Fri',10,50)
@@ -53,8 +54,8 @@ insert into lesson values(3,'Zoom','Thu',9.25,75)
 insert into lesson values(4,'Zoom','Tue',11,75)
 insert into lesson values(4,'Zoom','Thu',11,75)
 
-insert into lesson values(5,'Zoom','Tue',11,75)
-insert into lesson values(5,'Zoom','Thu',11,75)
+insert into lesson values(5,'Zoom','Tue',14.5,75)
+insert into lesson values(5,'Zoom','Thu',14.5,75)
 
 insert into lesson values(6,'Zoom','Mon',13,75)
 insert into lesson values(6,'Zoom','Wed',13,75)
