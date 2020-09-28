@@ -21,14 +21,19 @@ create table Class
     UNIQUE(CID,SemesterName,SemesterYear,Instructor)
 )
 
+
 create table Lesson 
 (
     CLID int ,
     Location nvarchar(256),
-    Time datetime ,
+    Day char(10) ,
+    Hour real,
     FOREIGN KEY (CLID) REFERENCES Class(CLID),
-    UNIQUE(CLID,Time,Location)
+    UNIQUE(CLID,Day,Hour,Location),
+    CHECK(Hour >= 0.0 AND Hour < 24.0),
+    CHECK(Day IN ('Sun','Mon','Tue','Wed','Thu','Fri','Sat'))
 )
+
 
 
 create table Enrollment 
