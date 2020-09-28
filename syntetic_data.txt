@@ -8,6 +8,7 @@ insert into student values(7,'user7')
 insert into student values(8,'user8') 
 
 
+
 insert into course values('Intro to CS in Pyton w/Lab','CSCI051 PO',1.0)
 insert into course values('Discrete Math and Func. Prog.','CSCI054 PO',1.0)
 insert into course values('Data Structure Adv Programming','CSCI062 PO',1.0)
@@ -34,3 +35,42 @@ insert into Class values(9,'CSCI159 PO','Fall',2020,'Kauchak, David')
 insert into Class values(10,'CSCI181 PO','Fall',2020,'Birrell, Eleanor')
 insert into Class values(11,'CSCI188 PO','Fall',2020,'Osborn, Joseph')
 insert into Class values(12,'CSCI190 PO','Fall',2020,'Greenberg, Michael')
+
+
+
+
+insert into lesson values(1,'Zoom','Mon',10,50)
+insert into lesson values(1,'Zoom','Wed',10,50)
+insert into lesson values(1,'Zoom','Fri',10,50)
+
+insert into lesson values(2,'Zoom','Mon',14.5,75)
+insert into lesson values(2,'Zoom','Wed',14.5,75)
+insert into lesson values(2,'Zoom','Fri',14.5,75)
+
+insert into lesson values(3,'Zoom','Tue',9.25,75)
+insert into lesson values(3,'Zoom','Thu',9.25,75)
+
+insert into lesson values(4,'Zoom','Tue',11,75)
+insert into lesson values(4,'Zoom','Thu',11,75)
+
+insert into lesson values(5,'Zoom','Tue',11,75)
+insert into lesson values(5,'Zoom','Thu',11,75)
+
+insert into lesson values(6,'Zoom','Mon',13,75)
+insert into lesson values(6,'Zoom','Wed',13,75)
+
+insert into lesson values(7,'Zoom','Mon',11,75)
+insert into lesson values(7,'Zoom','Wed',11,75)
+
+insert into lesson values(8,'Zoom','Tue',14.5,75)
+insert into lesson values(8,'Zoom','Thu',14.5,75)
+
+insert into lesson values(9,'Zoom','Tue',12.75,75)
+insert into lesson values(9,'Zoom','Thu',12.75,75)
+
+insert into lesson values(10,'Zoom','Mon',12.75,75)
+insert into lesson values(10,'Zoom','Wed',12.75,75)
+
+insert into lesson values(11,'Zoom','Tue',16,90)
+
+insert into lesson values(12,'Zoom','Mon',11,75)
