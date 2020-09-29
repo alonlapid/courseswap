@@ -1,18 +1,10 @@
-create login alonlapid with PASSWORD = 'galpomona50)';
-create login kristinecho with PASSWORD ='galpomona50)';
-create login samness with PASSWORD='galpomona50)';
-create login user4 with PASSWORD ='galpomona50)';
-create login user5 with PASSWORD ='galpomona50)';
-create login user6 with PASSWORD = 'galpomona50)';
-create login user7 with PASSWORD ='galpomona50)';
-create login user8 with PASSWORD ='galpomona50)';
+create login Bob with PASSWORD ='galpomona50)';
+create login Joe with PASSWORD ='galpomona50)';
+create login Kate with PASSWORD = 'galpomona50)';
+create login Jill with PASSWORD ='galpomona50)';
 
-create user alonlapid from login alonlapid
-create user kristinecho from login kristinecho
-create user samness from login samness
-create user user4 from login user4
-create user user5 from login user5
-create user user6 from login user6
-create user user7 from login user7
-create user user8 from login user8
+create user Bob from login Bob
+create user Joe from login Joe
+create user Kate from login Kate
+create user Jill from login Jill
 
