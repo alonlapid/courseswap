@@ -1,11 +1,7 @@
-insert into student values(1,'alonlapid')
-insert into student values(2,'kristinecho')
-insert into student values(3,'samness')
-insert into student values(4,'user4')
-insert into student values(5,'user5')
-insert into student values(6,'user6')
-insert into student values(7,'user7')
-insert into student values(8,'user8') 
+insert into student values(1,'Bob')
+insert into student values(2,'Jil')
+insert into student values(3,'Joe')
+insert into student values(4,'Kate')
 
 
 

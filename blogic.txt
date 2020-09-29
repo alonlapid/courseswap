@@ -1,0 +1,44 @@
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROC [dbo].[sp_credit]
+AS
+  SELECT student.name as StudentName,Course.Name as CourseName,Course.CID from enrollment 
+  INNER JOIN Class on Enrollment.CLID = Class.CLID 
+  INNER JOIN Course on Course.CID = Class.CID
+  INNER JOIN student on student.SID = Enrollment.SID
+  where completed = 1 
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROC [dbo].[sp_enrollment]
+AS
+  SELECT student.name as StudentName,Course.Name as CourseName,Course.CID,Class.Instructor from enrollment 
+  INNER JOIN Class on Enrollment.CLID = Class.CLID 
+  INNER JOIN Course on Course.CID = Class.CID
+  INNER JOIN student on student.SID = Enrollment.SID
+  where completed = 0 
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+    CREATE    PROCEDURE [dbo].[sp_lesson] @clid int
+    AS
+    BEGIN
+        
+        select 
+        Course.CID AS Course,Instructor, Location,Day,Hour,LengthInMin from Lesson 
+        inner join Class on Lesson.CLID = Class.CLID 
+        inner join Course on Course.CID = Class.CID 
+        where Class.CLID = @clid 
+    END
+GO
+

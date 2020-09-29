@@ -8,3 +8,8 @@ create user Joe from login Joe
 create user Kate from login Kate
 create user Jill from login Jill
 
+
+GRANT EXEC TO Bob
+GRANT EXEC TO Kate
+GRANT EXEC TO Jill
+GRANT EXEC TO Joe
