@@ -1,11 +1,7 @@
-insert into student values(1,'alonlapid')
-insert into student values(2,'kristinecho')
-insert into student values(3,'samness')
-insert into student values(4,'user4')
-insert into student values(5,'user5')
-insert into student values(6,'user6')
-insert into student values(7,'user7')
-insert into student values(8,'user8') 
+insert into student values(1,'Bob')
+insert into student values(2,'Jil')
+insert into student values(3,'Joe')
+insert into student values(4,'Kate')
 
 
 
@@ -39,70 +35,59 @@ insert into Class values(12,'CSCI190 PO','Fall',2020,'Greenberg, Michael')
 
 
 
+
 insert into lesson values(1,'Zoom','Mon',10,50)
 insert into lesson values(1,'Zoom','Wed',10,50)
 insert into lesson values(1,'Zoom','Fri',10,50)
-
 insert into lesson values(2,'Zoom','Mon',14.5,75)
 insert into lesson values(2,'Zoom','Wed',14.5,75)
 insert into lesson values(2,'Zoom','Fri',14.5,75)
-
 insert into lesson values(3,'Zoom','Tue',9.25,75)
 insert into lesson values(3,'Zoom','Thu',9.25,75)
-
 insert into lesson values(4,'Zoom','Tue',11,75)
 insert into lesson values(4,'Zoom','Thu',11,75)
-
-insert into lesson values(5,'Zoom','Tue',11,75)
-insert into lesson values(5,'Zoom','Thu',11,75)
-
+insert into lesson values(5,'Zoom','Tue',14.5,75)
+insert into lesson values(5,'Zoom','Thu',14.5,75)
 insert into lesson values(6,'Zoom','Mon',13,75)
 insert into lesson values(6,'Zoom','Wed',13,75)
-
 insert into lesson values(7,'Zoom','Mon',11,75)
 insert into lesson values(7,'Zoom','Wed',11,75)
-
 insert into lesson values(8,'Zoom','Tue',14.5,75)
 insert into lesson values(8,'Zoom','Thu',14.5,75)
-
 insert into lesson values(9,'Zoom','Tue',12.75,75)
 insert into lesson values(9,'Zoom','Thu',12.75,75)
-
 insert into lesson values(10,'Zoom','Mon',12.75,75)
 insert into lesson values(10,'Zoom','Wed',12.75,75)
-
 insert into lesson values(11,'Zoom','Tue',16,90)
-
 insert into lesson values(12,'Zoom','Mon',11,75)
 
 
 
 insert into  Prerequisite values('CSCI054 PO','CSCI051 PO')
-
 insert into  Prerequisite values('CSCI062 PO','CSCI051 PO')
-
 insert into  Prerequisite values('CSCI101 PO','CSCI054 PO')
 insert into  Prerequisite values('CSCI101 PO','CSCI062 PO')
-
 insert into  Prerequisite values('CSCI105 PO','CSCI062 PO')
-
 insert into  Prerequisite values('CSCI133 PO','CSCI062 PO')
-
 insert into  Prerequisite values('CSCI140 PO','CSCI062 PO')
-
 insert into  Prerequisite values('CSCI151 PO','CSCI062 PO')
-
 insert into  Prerequisite values('CSCI159 PO','CSCI062 PO')
-
 insert into  Prerequisite values('CSCI181 PO','CSCI105 PO')
-
 insert into  Prerequisite values('CSCI188 PO','CSCI051 PO')
-
 insert into  Prerequisite values('CSCI190 PO','CSCI101 PO')
-
 insert into  Prerequisite values('CSCI190 PO','CSCI105 PO')
-
 insert into  Prerequisite values('CSCI190 PO','CSCI188 PO')
+
+
+insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(1,1,1,GETDATE())
+insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(1,2,1,GETDATE())
+insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(1,3,1,GETDATE())
+insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(1,4,1,GETDATE())
+insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(1,7,1,GETDATE())
+insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(1,5,0,GETDATE())
+insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(1,6,0,GETDATE())
+insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(1,8,0,GETDATE())
+
 
 
 
