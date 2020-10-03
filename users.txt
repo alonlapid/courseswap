@@ -1,15 +1,14 @@
-create login Bob with PASSWORD ='galpomona50)';
-create login Joe with PASSWORD ='galpomona50)';
-create login Kate with PASSWORD = 'galpomona50)';
-create login Jill with PASSWORD ='galpomona50)';
-
-create user Bob from login Bob
-create user Joe from login Joe
-create user Kate from login Kate
-create user Jill from login Jill
+create login Alon with PASSWORD ='galpomona50)';
+create login Kristine with PASSWORD ='galpomona50)';
+create login Sam with PASSWORD = 'galpomona50)';
 
 
-GRANT EXEC TO Bob
-GRANT EXEC TO Kate
-GRANT EXEC TO Jill
-GRANT EXEC TO Joe
+create user Alon from login Alon
+create user Kristine from login Kristine
+create user Sam from login Sam
+
+
+GRANT EXEC TO Alon
+GRANT EXEC TO Kristine
+GRANT EXEC TO Sam
+
