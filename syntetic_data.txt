@@ -106,9 +106,9 @@ insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(3,5,1,GETDATE(
 insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(3,7,1,GETDATE())
 insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(3,8,1,GETDATE())
 insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(3,9,1,GETDATE())
-insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(3,10,1,GETDATE())
-insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(3,11,1,GETDATE())
-insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(3,12,1,GETDATE())
+insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(3,10,0,GETDATE())
+insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(3,11,0,GETDATE())
+insert into Enrollment (SID,CLID,Completed,EnrollmentTime) values(3,12,0,GETDATE())
 
 
 
