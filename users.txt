@@ -12,3 +12,19 @@ GRANT EXEC TO Alon
 GRANT EXEC TO Kristine
 GRANT EXEC TO Sam
 
+GRANT REFERENCES TO Alon
+GRANT REFERENCES TO Kristine
+GRANT REFERENCES TO Sam
+
+GRANT SELECT ON fn_enrollment   TO public 
+GRANT SELECT ON fn_course   TO public 
+GRANT SELECT ON fn_courseviolation   TO public 
+GRANT SELECT ON fn_credit   TO public 
+GRANT SELECT ON fn_enrollment   TO public 
+GRANT SELECT ON fn_exchangeRequest   TO public 
+GRANT SELECT ON fn_lesson   TO public 
+GRANT SELECT ON fn_match   TO public 
+GRANT SELECT ON fn_newlesson   TO public 
+GRANT SELECT ON fn_timeconflict   TO public 
+GRANT SELECT ON fn_prerequisite   TO public 
+
