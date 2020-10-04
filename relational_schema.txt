@@ -251,6 +251,7 @@ CREATE TABLE [dbo].[Prerequisite](
 	[MUSTCID] [nvarchar](256) NOT NULL,
 PRIMARY KEY CLUSTERED 
 (
+<<<<<<< HEAD
 	[CID] ASC,
 	[MUSTCID] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
@@ -286,6 +287,22 @@ CREATE TABLE [dbo].[ExchangeRequest](
 	[RequestTime] [datetime] NULL,
 	[IsActive] [int] NULL,
 PRIMARY KEY CLUSTERED 
+=======
+    CLID  int primary key, 
+    CID nvarchar(256) , 
+    SemesterName  nvarchar(256) ,
+    SemesterYear  int, 
+    Instructor nvarchar(256),
+    Name nvarchar(256),
+    FOREIGN KEY (CID) REFERENCES Course(CID),
+    UNIQUE(CID,SemesterName,SemesterYear,Instructor),
+    CHECK(SemesterName in ('Fall','Spring','Summer')),
+    UNIQUE(Name),
+    CHECK(SemesterYear > 2000 and SemesterYear < 3000)
+)
+
+create table Lesson 
+>>>>>>> cac33e2bb7a49f67374fce20a4faeb1a4d0b33b1
 (
 	[RID] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]

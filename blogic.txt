@@ -1,17 +1,37 @@
-ALTER PROCEDURE sp_exchange_request @sid int, @remove_clid int,@add_clid int
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROC [dbo].[sp_exchange_request] @sid int, @remove_clid int,@add_clid int
 AS
     BEGIN
         DECLARE @timeconflicts int;
         DECLARE @cid nvarchar(256); 
+        DECLARE @cid2 nvarchar(256); 
         DECLARE @anyrecord int;
         SET  @cid   = (select CID from Class where CLID = @add_clid );
-        SET  @anyrecord   = (select count(*) from Enrollment where SID = @sid and CLID =  @remove_clid and Completed=0); 
-        
+        SET  @cid2   = (select CID from Class where CLID = @remove_clid );
+
+        IF(dbo.fn_canaccess (@sid ) = 0)
+            BEGIN
+               RAISERROR(N'You dont have the permission to perfom the operation' , 1, 16)
+               RETURN
+            END
+
+
+        SET  @anyrecord   = (select count(*) from ExchangeRequest where SID = @sid and IsActive=1); 
+        IF (@anyrecord > 0)
+            BEGIN
+               RAISERROR(N'Exchange request failed because the student already has an active request' , 1, 16)
+               RETURN
+            END
+
         
 
+        SET  @anyrecord   = (select count(*) from Enrollment where SID = @sid and CLID =  @remove_clid and Completed=0); 
         IF (@anyrecord = 0)
             BEGIN
-               RAISERROR(N'Exchange request failed because the student is not enrolled to class %d', 1, 16,@remove_clid)
+               RAISERROR(N'Exchange request failed because the student is not enrolled to class %d, course %s' , 1, 16,@remove_clid,@cid2)
                RETURN
             END
          
@@ -21,8 +41,21 @@ AS
                 RAISERROR(N'Exchange request failed because the reuested class %d does not exist ' , 1, 16,@add_clid)
                 RETURN
             END
-    
         
+        SET  @anyrecord   = (select count(*) from Enrollment where CLID =  @add_clid and Completed = 0 and SID = @sid);      
+        IF (@anyrecord  > 0)
+            BEGIN
+                RAISERROR(N'Exchange request failed because the the student is already enrolled to  class %d, course %s  ' , 1, 16,@add_clid,@cid)
+                RETURN
+            END
+        
+         SET  @anyrecord   = (select count(*) from Enrollment where CLID =  @add_clid and Completed = 1 and SID = @sid);      
+        IF (@anyrecord  > 0)
+            BEGIN
+                RAISERROR(N'Exchange request failed because the the student  already completed the class %d, course %s  ' , 1, 16,@add_clid,@cid)
+                RETURN
+            END
+
         SET @timeconflicts = 
         (
             SELECT 
@@ -47,11 +80,14 @@ AS
             END
             ELSE 
             BEGIN 
-               insert into ExchangeRequest (SID,CLID_Src,CLID_Dest,RequestTime) values(@sid,@remove_clid,@add_clid,GETDATE())
+               insert into ExchangeRequest (SID,CLID_Src,CLID_Dest,RequestTime,IsActive) values(@sid,@remove_clid,@add_clid,GETDATE(),1)
                select * from ExchangeRequest where SID = @sid
             END
         END
-    END      
+    END        
+
+GO
+
     
     
    SET ANSI_NULLS ON
@@ -202,7 +238,69 @@ RETURN
 
 GO
 
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROC [dbo].[sp_swap] 
+AS
+    BEGIN
+    select * into #tempmatch  from fn_match()
+    declare @history nvarchar(max);
+    set @history = ''
+    
+        declare @SID1 int
+        declare @SID2 int
+        declare @Class_IN int
+        declare @Class_OUT int
 
+        IF(IS_ROLEMEMBER ('db_owner')  = 0)
+            BEGIN
+                RAISERROR(N'You dont have the permission to perfom the operation' , 1, 16)
+                RETURN
+            END
+        
+        
+            DECLARE match CURSOR FOR SELECT SID1, SID2,Class_IN,Class_OUT from #tempmatch
+            OPEN match;
+                    
+            FETCH NEXT FROM match INTO 
+                    @SID1, 
+                    @SID2,
+                    @Class_IN,
+                    @Class_OUT 
+
+            WHILE @@FETCH_STATUS = 0        
+
+                BEGIN
+                        
+                        IF( CHARINDEX(CAST(@SID1 AS varchar),@history) = 0 and  CHARINDEX(CAST(@SID2 AS varchar),@history) = 0  )
+                        BEGIN 
+                            BEGIN  TRAN
+                            PRINT 'Swaping class for students ' + CAST(@SID1 AS varchar) + ',' +CAST(@SID2 AS varchar) +   ', class ' +  CAST(@Class_OUT AS varchar) + ' for ' + CAST(@Class_IN AS varchar)
+                            update Enrollment set CLID = @Class_IN WHERE CLID = @Class_OUT AND SID = @SID1 
+                            update Enrollment set CLID = @Class_Out WHERE CLID = @Class_IN AND SID = @SID2                            
+                            update ExchangeRequest set  IsActive = 0 where SID in  (@SID1 ,@SID2)
+                            COMMIT 
+                        END      
+                            set @history = @history + CAST(@SID2 AS varchar) + ',' + CAST(@SID2 AS varchar)
+                            FETCH NEXT FROM match INTO 
+                                @SID1, 
+                                @SID2,
+                                @Class_IN,
+                                @Class_OUT 
+                             
+                END;        
+                close match
+                DEALLOCATE match                
+             
+    END        
+
+GO
 
 
 
