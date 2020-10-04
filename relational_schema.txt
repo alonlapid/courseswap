@@ -25,9 +25,11 @@ create table Class
     SemesterName  nvarchar(256) ,
     SemesterYear  int, 
     Instructor nvarchar(256),
+    Name nvarchar(256),
     FOREIGN KEY (CID) REFERENCES Course(CID),
     UNIQUE(CID,SemesterName,SemesterYear,Instructor),
     CHECK(SemesterName in ('Fall','Spring','Summer')),
+    UNIQUE(Name),
     CHECK(SemesterYear > 2000 and SemesterYear < 3000)
 )
 
