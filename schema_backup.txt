@@ -1,0 +1,588 @@
+/****** Object:  User [Alon]    Script Date: 10/4/2020 10:41:16 AM ******/
+CREATE USER [Alon] FOR LOGIN [Alon] WITH DEFAULT_SCHEMA=[dbo]
+GO
+
+/****** Object:  User [Kristine]    Script Date: 10/4/2020 10:41:16 AM ******/
+CREATE USER [Kristine] FOR LOGIN [Kristine] WITH DEFAULT_SCHEMA=[dbo]
+
+/****** Object:  User [Sam]    Script Date: 10/4/2020 10:41:16 AM ******/
+CREATE USER [Sam] FOR LOGIN [Sam] WITH DEFAULT_SCHEMA=[dbo]
+GO
+
+
+/****** Object:  UserDefinedFunction [dbo].[fn_canaccess]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE  FUNCTION [dbo].[fn_canaccess](@sid int)  
+RETURNS int   
+AS   
+  
+BEGIN  
+   declare @username nvarchar(256) 
+   declare @ret int
+   set @ret =0;
+   set @username = (select Name from Student where SID = @sid)
+   if(@username = CURRENT_USER or  IS_ROLEMEMBER ('db_owner') =1 )
+        set @ret = 1
+
+   RETURN @ret;       
+END; 
+
+GO
+/****** Object:  Table [dbo].[Course]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Course](
+	[Name] [nvarchar](256) NULL,
+	[CID] [nvarchar](256) NOT NULL,
+	[Points] [real] NULL,
+	[Department] [nvarchar](256) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[CID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Class]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Class](
+	[CLID] [int] NOT NULL,
+	[CID] [nvarchar](256) NULL,
+	[SemesterName] [nvarchar](256) NULL,
+	[SemesterYear] [int] NULL,
+	[Instructor] [nvarchar](256) NULL,
+	[Name] [nvarchar](256) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[CLID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[CID] ASC,
+	[SemesterName] ASC,
+	[SemesterYear] ASC,
+	[Instructor] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[Name] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Lesson]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Lesson](
+	[CLID] [int] NULL,
+	[Location] [nvarchar](256) NULL,
+	[Day] [char](10) NULL,
+	[Hour] [real] NULL,
+	[LengthInMin] [int] NULL,
+UNIQUE NONCLUSTERED 
+(
+	[CLID] ASC,
+	[Day] ASC,
+	[Hour] ASC,
+	[Location] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Student]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Student](
+	[SID] [int] NOT NULL,
+	[Name] [nvarchar](256) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[SID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Enrollment]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Enrollment](
+	[EID] [int] IDENTITY(1,1) NOT NULL,
+	[SID] [int] NULL,
+	[CLID] [int] NULL,
+	[Completed] [int] NULL,
+	[EnrollmentTime] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[EID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[CLID] ASC,
+	[SID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  UserDefinedFunction [dbo].[fn_newlesson]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE  FUNCTION [dbo].[fn_newlesson] (@sid int,@remove_clid int, @add_clid int)
+RETURNS TABLE
+AS
+RETURN
+(   
+        select 
+        course.CID,Lesson.* from Lesson 
+        inner join Class on Class.CLID = Lesson.CLID
+        inner join EnrolLment on Class.CLID = EnrolLment.CLID
+        inner join Student  on Enrollment.SID = Student.SID 
+        inner join course on course.CID = Class.CID 
+        where Class.CLID != @remove_clid   and Student.SID = @sid
+        and EnrolLment.Completed = 0 and  dbo.fn_canaccess(@sid ) =1
+
+        union all 
+        select course.CID,Lesson.* from Lesson 
+        inner join Class on Class.CLID = Lesson.CLID
+        inner join course on course.CID = Class.CID 
+        where Class.CLID = @add_clid
+        and   dbo.fn_canaccess(@sid ) =1
+);
+
+GO
+/****** Object:  UserDefinedFunction [dbo].[fn_lesson]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE FUNCTION [dbo].[fn_lesson] (@clid int)
+RETURNS TABLE
+AS
+RETURN
+(    
+        select 
+        Class.Name AS ClassName,Class.CID AS Course,Instructor, Location,Day,Hour,LengthInMin from Lesson 
+        inner join Class on Lesson.CLID = Class.CLID 
+        inner join Course on Course.CID = Class.CID 
+        where Class.CLID = @clid 
+);
+GO
+/****** Object:  UserDefinedFunction [dbo].[fn_credit]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE FUNCTION [dbo].[fn_credit] ()
+RETURNS TABLE
+AS
+RETURN
+(
+  SELECT student.name as StudentName,Course.Name as CourseName,Course.CID from enrollment 
+  INNER JOIN Class on Enrollment.CLID = Class.CLID 
+  INNER JOIN Course on Course.CID = Class.CID
+  INNER JOIN student on student.SID = Enrollment.SID
+  where completed = 1 
+  and dbo.fn_canaccess(student.SID ) =1
+);
+
+GO
+/****** Object:  UserDefinedFunction [dbo].[fn_enrollment]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE FUNCTION [dbo].[fn_enrollment] ()
+RETURNS TABLE
+AS
+RETURN
+  SELECT student.SID as SudentId, student.name as StudentName,Course.Name as CourseName,Course.CID,Class.CLID AS ClassId, Class.Name AS ClassName,Class.Instructor from enrollment 
+  INNER JOIN Class on Enrollment.CLID = Class.CLID 
+  INNER JOIN Course on Course.CID = Class.CID
+  INNER JOIN student on student.SID = Enrollment.SID
+  where completed = 0 
+  and dbo.fn_canaccess(student.SID ) =1
+
+GO
+/****** Object:  UserDefinedFunction [dbo].[fn_timeconflict]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE  FUNCTION [dbo].[fn_timeconflict] (@sid int,@remove_clid int, @add_clid int)
+RETURNS TABLE
+AS
+RETURN
+(
+   select L1.CID AS Course1,L1.Day  AS Class1_Day, L1.Hour AS Class1_Hour,L1.LengthInMin as Class1_LengthInMin ,
+          L2.CID AS Course2,L2.Day  AS Class2_Day, L2.Hour AS Class2_Hour,L2.LengthInMin as Class2_LengthInMin 
+   from fn_newlesson(@sid,@remove_clid , @add_clid) AS L1 
+   inner join fn_newlesson(@sid,@remove_clid , @add_clid)  as L2 on L1.CLID != L2.CLID
+   WHERE L1.day = L2.day 
+    and 
+    (
+        (L1.Hour  >= l2.Hour and L1.Hour < L2.Hour + cast (L2.LengthInMin as real)/60  )     or 
+        (L1.Hour + cast (L1.LengthInMin as real)/60  >= l2.Hour and L1.Hour + cast (L1.LengthInMin as real)/60   < L2.Hour + cast (L2.LengthInMin as real)/60  )     or
+        (L2.Hour  >= l1.Hour and L2.Hour < L1.Hour + cast (L1.LengthInMin as real)/60  )    or
+        (L2.Hour + cast (L2.LengthInMin as real)/60  >= l1.Hour and L2.Hour + cast (L2.LengthInMin as real)/60   < L1.Hour + cast (L1.LengthInMin as real)/60  ) 
+    )
+    and   dbo.fn_canaccess(@sid ) =1
+);
+
+
+GO
+/****** Object:  Table [dbo].[Prerequisite]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Prerequisite](
+	[CID] [nvarchar](256) NOT NULL,
+	[MUSTCID] [nvarchar](256) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[CID] ASC,
+	[MUSTCID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  UserDefinedFunction [dbo].[fn_courseviolation]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE FUNCTION [dbo].[fn_courseviolation] (@sid int,@cid nvarchar(256))
+RETURNS TABLE
+AS
+RETURN
+(   
+    select MUSTCID AS PreconditionCourse from Prerequisite where CID = @cid
+    and MUSTCID not 
+    in( SELECT CID from Enrollment inner join Class on Class.CLID = Enrollment.CLID where Completed = 1 and SID = @sid)    
+    and dbo.fn_canaccess(@sid ) =1
+);
+
+GO
+/****** Object:  Table [dbo].[ExchangeRequest]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ExchangeRequest](
+	[RID] [int] IDENTITY(1,1) NOT NULL,
+	[SID] [int] NULL,
+	[CLID_Src] [int] NULL,
+	[CLID_Dest] [int] NULL,
+	[RequestTime] [datetime] NULL,
+	[IsActive] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[RID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  UserDefinedFunction [dbo].[fn_match]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE  FUNCTION [dbo].[fn_match] ()
+RETURNS TABLE
+AS
+RETURN
+(
+   select S1.Name AS Student1, E1.SID AS SID1, C1.CID AS Course_IN ,E2.CLID_Src as Class_IN ,
+          C2.CID AS Course_OUT,E1.CLID_Src as Class_OUT,S2.Name AS Student2,E2.SID AS SID2
+   from ExchangeRequest as E1 
+   inner join ExchangeRequest as E2 on E1.SID != E2.SID and E1.CLID_Src = E2.CLID_Dest and  E2.CLID_Src = E1.CLID_Dest
+   inner join Student AS S1 on E1.SID = S1.SID
+   inner join Student AS S2 on E2.SID = S2.SID
+   inner join Class AS CL1 on E1.CLID_Src = CL1.CLID
+   inner join Class AS CL2 on E2.CLID_Src = CL2.CLID
+   inner join Course AS C1 on C1.CID = CL1.CID
+   inner join Course AS C2 on C2.CID = CL2.CID
+   where E1.IsActive = 1 AND E2.IsActive = 1 
+);
+
+GO
+/****** Object:  UserDefinedFunction [dbo].[fn_course]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE FUNCTION [dbo].[fn_course] ()
+RETURNS TABLE
+AS
+RETURN
+(
+  SELECT * from course
+);
+
+GO
+/****** Object:  UserDefinedFunction [dbo].[fn_class]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE FUNCTION [dbo].[fn_class] ()
+RETURNS TABLE
+AS
+RETURN
+(    
+        SELECT CLID,CID As Course,SemesterName,SemesterYear,Instructor from class
+);
+GO
+/****** Object:  UserDefinedFunction [dbo].[fn_exchangeRequest]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE  FUNCTION [dbo].[fn_exchangeRequest] ()
+RETURNS TABLE
+AS
+RETURN
+  select (case WHEN IS_ROLEMEMBER ('db_owner') = 1 then SID else null END)AS SID , 
+  CLID_Src,C1.Name AS ClassName_Src,CLID_Dest,C2.Name AS ClassName_Dest,RequestTime , IsActive
+  from ExchangeRequest as E 
+  inner join Class as C1 ON C1.CLID = E.CLID_Src
+  inner join Class as C2 ON C2.CLID = E.CLID_Dest
+  where dbo.fn_canaccess(SID ) =1
+
+GO
+/****** Object:  UserDefinedFunction [dbo].[fn_prerequisite]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE FUNCTION [dbo].[fn_prerequisite] ()
+RETURNS TABLE
+AS
+RETURN
+(    
+        SELECT * from Prerequisite
+);
+
+
+GO
+ALTER TABLE [dbo].[Class]  WITH CHECK ADD FOREIGN KEY([CID])
+REFERENCES [dbo].[Course] ([CID])
+GO
+ALTER TABLE [dbo].[Enrollment]  WITH CHECK ADD FOREIGN KEY([CLID])
+REFERENCES [dbo].[Class] ([CLID])
+GO
+ALTER TABLE [dbo].[Enrollment]  WITH CHECK ADD FOREIGN KEY([SID])
+REFERENCES [dbo].[Student] ([SID])
+GO
+ALTER TABLE [dbo].[ExchangeRequest]  WITH CHECK ADD FOREIGN KEY([CLID_Src])
+REFERENCES [dbo].[Class] ([CLID])
+GO
+ALTER TABLE [dbo].[ExchangeRequest]  WITH CHECK ADD FOREIGN KEY([CLID_Dest])
+REFERENCES [dbo].[Class] ([CLID])
+GO
+ALTER TABLE [dbo].[ExchangeRequest]  WITH CHECK ADD FOREIGN KEY([SID])
+REFERENCES [dbo].[Student] ([SID])
+GO
+ALTER TABLE [dbo].[Lesson]  WITH CHECK ADD FOREIGN KEY([CLID])
+REFERENCES [dbo].[Class] ([CLID])
+GO
+ALTER TABLE [dbo].[Prerequisite]  WITH CHECK ADD FOREIGN KEY([MUSTCID])
+REFERENCES [dbo].[Course] ([CID])
+GO
+ALTER TABLE [dbo].[Prerequisite]  WITH CHECK ADD FOREIGN KEY([CID])
+REFERENCES [dbo].[Course] ([CID])
+GO
+ALTER TABLE [dbo].[Class]  WITH CHECK ADD CHECK  (([SemesterName]='Summer' OR [SemesterName]='Spring' OR [SemesterName]='Fall'))
+GO
+ALTER TABLE [dbo].[Class]  WITH CHECK ADD CHECK  (([SemesterYear]>(2000) AND [SemesterYear]<(3000)))
+GO
+ALTER TABLE [dbo].[Enrollment]  WITH CHECK ADD CHECK  (([Completed]=(0) OR [Completed]=(1)))
+GO
+ALTER TABLE [dbo].[Lesson]  WITH CHECK ADD CHECK  (([Day]='Sat' OR [Day]='Fri' OR [Day]='Thu' OR [Day]='Wed' OR [Day]='Tue' OR [Day]='Mon' OR [Day]='Sun'))
+GO
+ALTER TABLE [dbo].[Lesson]  WITH CHECK ADD CHECK  (([Hour]>=(0.0) AND [Hour]<(24.0)))
+GO
+ALTER TABLE [dbo].[Lesson]  WITH CHECK ADD CHECK  (([LengthInMin]>(0) AND [LengthInMin]<(120)))
+GO
+/****** Object:  StoredProcedure [dbo].[sp_cancell_request]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROC [dbo].[sp_cancell_request] @sid int
+AS
+    BEGIN
+        IF(dbo.fn_canaccess (@sid ) = 0)
+            BEGIN
+               RAISERROR(N'You dont have the premision to perfom the operation' , 1, 16)
+               RETURN
+            END
+
+         delete from ExchangeRequest where SID = @sid
+    END      
+
+
+GO
+/****** Object:  StoredProcedure [dbo].[sp_exchange_request]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROC [dbo].[sp_exchange_request] @sid int, @remove_clid int,@add_clid int
+AS
+    BEGIN
+        DECLARE @timeconflicts int;
+        DECLARE @cid nvarchar(256); 
+        DECLARE @cid2 nvarchar(256); 
+        DECLARE @anyrecord int;
+        SET  @cid   = (select CID from Class where CLID = @add_clid );
+        SET  @cid2   = (select CID from Class where CLID = @remove_clid );
+
+        IF(dbo.fn_canaccess (@sid ) = 0)
+            BEGIN
+               RAISERROR(N'You dont have the permission to perfom the operation' , 1, 16)
+               RETURN
+            END
+
+
+        SET  @anyrecord   = (select count(*) from ExchangeRequest where SID = @sid and IsActive=1); 
+        IF (@anyrecord > 0)
+            BEGIN
+               RAISERROR(N'Exchange request failed because the student already has an active request' , 1, 16)
+               RETURN
+            END
+
+        
+
+        SET  @anyrecord   = (select count(*) from Enrollment where SID = @sid and CLID =  @remove_clid and Completed=0); 
+        IF (@anyrecord = 0)
+            BEGIN
+               RAISERROR(N'Exchange request failed because the student is not enrolled to class %d, course %s' , 1, 16,@remove_clid,@cid2)
+               RETURN
+            END
+         
+        SET  @anyrecord   = (select count(*) from Class where CLID =  @add_clid );      
+        IF (@anyrecord  = 0)
+            BEGIN
+                RAISERROR(N'Exchange request failed because the reuested class %d does not exist ' , 1, 16,@add_clid)
+                RETURN
+            END
+        
+        SET  @anyrecord   = (select count(*) from Enrollment where CLID =  @add_clid and Completed = 0 and SID = @sid);      
+        IF (@anyrecord  > 0)
+            BEGIN
+                RAISERROR(N'Exchange request failed because the the student is already enrolled to  class %d, course %s  ' , 1, 16,@add_clid,@cid)
+                RETURN
+            END
+        
+         SET  @anyrecord   = (select count(*) from Enrollment where CLID =  @add_clid and Completed = 1 and SID = @sid);      
+        IF (@anyrecord  > 0)
+            BEGIN
+                RAISERROR(N'Exchange request failed because the the student  already completed the class %d, course %s  ' , 1, 16,@add_clid,@cid)
+                RETURN
+            END
+
+        SET @timeconflicts = 
+        (
+            SELECT 
+            COUNT(*) FROM 
+            fn_timeconflict(@sid,@remove_clid,@add_clid)
+        ) 
+        IF (@timeconflicts > 0)
+            BEGIN
+              RAISERROR(N'Exchange request failed because of a time conflict', 1, 10)
+              RETURN
+            END
+            
+        ELSE
+        BEGIN 
+            DECLARE @courseconflict int;
+            SET @courseconflict =  (SELECT COUNT(*) FROM  fn_courseviolation(@sid,@cid));            
+                        
+            IF (@courseconflict > 0)
+            BEGIN
+              RAISERROR(N'Exchange request failed because the student did not have one or more a prerequisite to course %s', 1, 16,@cid)
+              RETURN
+            END
+            ELSE 
+            BEGIN 
+               insert into ExchangeRequest (SID,CLID_Src,CLID_Dest,RequestTime,IsActive) values(@sid,@remove_clid,@add_clid,GETDATE(),1)
+               select * from ExchangeRequest where SID = @sid
+            END
+        END
+    END        
+
+
+GO
+/****** Object:  StoredProcedure [dbo].[sp_swap]    Script Date: 10/4/2020 10:41:34 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROC [dbo].[sp_swap] 
+AS
+    BEGIN
+    select * into #tempmatch  from fn_match()
+    declare @history nvarchar(max);
+    set @history = ''
+    
+        declare @SID1 int
+        declare @SID2 int
+        declare @Class_IN int
+        declare @Class_OUT int
+
+        IF(IS_ROLEMEMBER ('db_owner')  = 0)
+            BEGIN
+                RAISERROR(N'You dont have the permission to perfom the operation' , 1, 16)
+                RETURN
+            END
+        
+        
+            DECLARE match CURSOR FOR SELECT SID1, SID2,Class_IN,Class_OUT from #tempmatch
+            OPEN match;
+                    
+            FETCH NEXT FROM match INTO 
+                    @SID1, 
+                    @SID2,
+                    @Class_IN,
+                    @Class_OUT 
+
+            WHILE @@FETCH_STATUS = 0        
+
+                BEGIN
+                        
+                        IF( CHARINDEX(CAST(@SID1 AS varchar),@history) = 0 and  CHARINDEX(CAST(@SID2 AS varchar),@history) = 0  )
+                        BEGIN 
+                            BEGIN  TRAN
+                            PRINT 'Swaping class for students ' + CAST(@SID1 AS varchar) + ',' +CAST(@SID2 AS varchar) +   ', class ' +  CAST(@Class_OUT AS varchar) + ' for ' + CAST(@Class_IN AS varchar)
+                            update Enrollment set CLID = @Class_IN WHERE CLID = @Class_OUT AND SID = @SID1 
+                            update Enrollment set CLID = @Class_Out WHERE CLID = @Class_IN AND SID = @SID2                            
+                            update ExchangeRequest set  IsActive = 0 where SID in  (@SID1 ,@SID2)
+                            COMMIT 
+                        END      
+                            set @history = @history + CAST(@SID2 AS varchar) + ',' + CAST(@SID2 AS varchar)
+                            FETCH NEXT FROM match INTO 
+                                @SID1, 
+                                @SID2,
+                                @Class_IN,
+                                @Class_OUT 
+                             
+                END;        
+                close match
+                DEALLOCATE match                
+             
+    END        
+
+
+GO
