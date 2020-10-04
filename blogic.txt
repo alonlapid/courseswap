@@ -242,12 +242,19 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 ALTER PROC [dbo].[sp_swap] 
 AS
     BEGIN
     select * into #tempmatch  from fn_match()
-    BEGIN TRANSACTION;
+    declare @history nvarchar(max);
+    set @history = ''
+    
         declare @SID1 int
+        declare @SID2 int
         declare @Class_IN int
         declare @Class_OUT int
 
@@ -257,40 +264,42 @@ AS
                 RETURN
             END
         
-        BEGIN TRY
-            DECLARE match CURSOR FOR SELECT SID1,Class_IN,Class_OUT from #tempmatch
+        
+            DECLARE match CURSOR FOR SELECT SID1, SID2,Class_IN,Class_OUT from #tempmatch
             OPEN match;
                     
             FETCH NEXT FROM match INTO 
                     @SID1, 
+                    @SID2,
                     @Class_IN,
                     @Class_OUT 
 
-            WHILE @@FETCH_STATUS = 0
-        
+            WHILE @@FETCH_STATUS = 0        
 
                 BEGIN
-                        PRINT 'Swaping class for student ' + CAST(@SID1 AS varchar) + ', class ' +  CAST(@Class_OUT AS varchar) + ' for ' + CAST(@Class_IN AS varchar)
-                         update Enrollment set CLID = @Class_IN WHERE CLID = @Class_OUT AND SID = @SID1 
-                        update ExchangeRequest set  IsActive = 0 where SID = @SID1 and CLID_Dest = @Class_IN 
                         
-                        FETCH NEXT FROM match INTO 
-                            @SID1, 
-                            @Class_IN,
-                            @Class_OUT 
+                        IF( CHARINDEX(CAST(@SID1 AS varchar),@history) = 0 and  CHARINDEX(CAST(@SID2 AS varchar),@history) = 0  )
+                        BEGIN 
+                            BEGIN  TRAN
+                            PRINT 'Swaping class for students ' + CAST(@SID1 AS varchar) + ',' +CAST(@SID2 AS varchar) +   ', class ' +  CAST(@Class_OUT AS varchar) + ' for ' + CAST(@Class_IN AS varchar)
+                            update Enrollment set CLID = @Class_IN WHERE CLID = @Class_OUT AND SID = @SID1 
+                            update Enrollment set CLID = @Class_Out WHERE CLID = @Class_IN AND SID = @SID2                            
+                            update ExchangeRequest set  IsActive = 0 where SID in  (@SID1 ,@SID2)
+                            COMMIT 
+                        END      
+                            set @history = @history + CAST(@SID2 AS varchar) + ',' + CAST(@SID2 AS varchar)
+                            FETCH NEXT FROM match INTO 
+                                @SID1, 
+                                @SID2,
+                                @Class_IN,
+                                @Class_OUT 
+                             
                 END;        
                 close match
-                DEALLOCATE match
-        COMMIT TRANSACTION
-         END TRY
-         BEGIN CATCH
-            IF @@TRANCOUNT > 0
-            BEGIN
-                ROLLBACK TRANSACTION; 
-            END
-    END CATCH
-     
+                DEALLOCATE match                
+             
     END        
+
 GO
 
 
