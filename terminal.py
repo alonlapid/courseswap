@@ -23,16 +23,29 @@ conn = pyodbc.connect('Driver={SQL Server Native Client 11.0};'
 def DisplyTable(df ):
     print(tabulate(df, headers='keys', tablefmt='psql'))
 
-def help_command(tokens:list):
+def help_command(argstokens:list):
+    if(len(argstokens) > 1 ):
+        if(argstokens[1] == "show"):
+            help_command_show(argstokens)
+        elif (argstokens[1] == "exe"):
+            help_command_exe(argstokens)
+        else :
+            print("invalid argument to the help command")
+            return        
+                    
     print("usage: ")
     print("<show|exe|help|exit>  [options] ")
     print("show: presents information relevant to section swap - type 'help show' for more information    ")
-    print("exe: performs action - type 'help show' for more information")
+    print("exe: performs action - type 'help exe' for more information")
     print("help [command] - shows this help message or help on a specific command")
     print("exit - quit the program")
-    
 
-def help_command_show(argstokens:list):
+def help_command_exe(argstokens:list):     
+    print("usage: ")
+    print("exe request <section id to drop > <section id to join> ")
+    print("exe swap ")
+
+def help_command_show(argstokens:list):          
     print("usage: ")
     print("show <sections|courses|students|requests|enrollments>")
     print("show sections - presents the sections available in this symester ")
@@ -81,6 +94,11 @@ while(True):
         continue
         
     handle_command = commands[command];
-    handle_command(argstokens)
+    try:
+        handle_command(argstokens)
+    except SystemExit:
+        sys.exit(2)
+    except:
+        continue
 
    
