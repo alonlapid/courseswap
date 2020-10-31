@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-Created on Thu Sep  3 13:25:23 2020
-
-@author: alon lapid
+Terminal for section swapper
 """
 
 from pandas import read_sql
@@ -11,12 +8,14 @@ from tabulate import tabulate
 import sys
 from getpass import getpass
 
-
+#Global connection to the database
 _Conn = None
 
+#Display nicly a dataframe
 def DisplyTable(df ):
     print(tabulate(df, headers='keys', tablefmt='psql'))
 
+#Help menu
 def help_command(argstokens:list):
     if(len(argstokens) > 1 ):
         if(argstokens[1] == "show"):
@@ -36,6 +35,7 @@ def help_command(argstokens:list):
     print("help [command] - shows this help message or help on a specific command")
     print("exit - quit the program")
 
+#Help menu for exe command
 def help_command_exe(argstokens:list):     
     print("usage: ")
     print("exe <request|swap|cancell>  [options] ")
@@ -43,6 +43,7 @@ def help_command_exe(argstokens:list):
     print("exe cancel - cancel student pending exchange requets  ")
     print("exe swap - swap sections of maching requests (registar only) ")
 
+#Help menu for show  command
 def help_command_show(argstokens:list):          
     print("usage: ")
     print("show <sections|courses|students|requests|enrollments>")
@@ -53,6 +54,7 @@ def help_command_show(argstokens:list):
     print("show enrollments - presents the current student enrollments")
     print("show matches - presents the matching exchange requests")
 
+#Login to the remote SQL Server
 def login(argstokens:list):
     global _Conn      
     server = 'tcp:syncservercs133.database.windows.net' 
@@ -68,6 +70,7 @@ def login(argstokens:list):
             password = getpass();
             _Conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
 
+#Queue a request for a section swap
 def exe_swap_request(argstokens:list):
     global _Conn
     if(len(argstokens) != 4):
@@ -86,7 +89,8 @@ def exe_swap_request(argstokens:list):
     
 def exe_swap_cancel_request(argstokens:list):
     print("exe_swap_cancel_request")
-    
+
+#Execute  a swap request (registar only)    
 def exe_swap(argstokens:list):
     global _Conn
     cursor = _Conn.cursor()
@@ -95,7 +99,8 @@ def exe_swap(argstokens:list):
     cursor.commit()
     cursor.close()
     print("command executed")      
-    
+
+#Entry point for the exe command    
 def execute_command(argstokens:list):
     global _Conn
     if(len(argstokens) < 2) :
@@ -111,8 +116,10 @@ def execute_command(argstokens:list):
         help_command_exe(argstokens)
         return
     
+    #Run the command
     actions[action](argstokens)
-            
+
+#Entry point for the show command              
 def show_command(argstokens:list):
     global _Conn
     if(len(argstokens) < 2) :
@@ -127,20 +134,20 @@ def show_command(argstokens:list):
         print(entity + " is not a valid argument to the show command")
         help_command_show(argstokens)
         return
-        
+    
+    #Query the entity and display the result    
     query = "select * from   " +   entities[entity]
     df = read_sql(query,_Conn)
     DisplyTable(df)   
      
-    
+#Exit    
 def exit_command(argstokens:list):
     sys.exit()
 
 commands =  {"help": help_command,"exit":exit_command,"show":show_command,"exe":execute_command  }
 print("Wellcome to section swapper! Please type a command ")  
 
-
-    
+#Main terminal loop - reading the user commands and executing them    
 while(True):    
     print(">>")  
     theinput=input()
