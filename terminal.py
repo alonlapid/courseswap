@@ -7,6 +7,7 @@ import pyodbc
 from tabulate import tabulate
 import sys
 from getpass import getpass
+import re
 
 #Global connection to the database
 _Conn = None
@@ -15,6 +16,13 @@ _Conn = None
 def DisplyTable(df ):
     print(tabulate(df, headers='keys', tablefmt='psql'))
 
+def FormatError(err:str):
+    p=re.compile("\(.+\](.+)\(\d.+")
+    m=p.match(err)
+    if(m is None):
+        return err
+    else:
+        return "Error: " +  m.group(1)
 #Help menu
 def help_command(argstokens:list):
     if(len(argstokens) > 1 ):
@@ -180,7 +188,7 @@ while(True):
     except SystemExit:
        sys.exit("User requsted exit")   
     except pyodbc.ProgrammingError as e:
-        print(e)
+        print(FormatError(str(e)))
         continue
     except Exception as e:
         print(e)
