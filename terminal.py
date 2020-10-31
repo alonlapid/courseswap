@@ -46,13 +46,14 @@ def help_command_exe(argstokens:list):
 #Help menu for show  command
 def help_command_show(argstokens:list):          
     print("usage: ")
-    print("show <sections|courses|students|requests|enrollments>")
+    print("show <sections|courses|students|requests|enrollments|lessons>")
     print("show sections - presents the sections available in this symester ")
     print("show courses - presents the list of courses")
     print("show students - presents the listof students")
     print("show requests - presents the pending exchange requests")
     print("show enrollments - presents the current student enrollments")
     print("show matches - presents the matching exchange requests")
+    print("show lessons <section id> - presents the lessons for a section")
 
 #Login to the remote SQL Server
 def login(argstokens:list):
@@ -86,9 +87,16 @@ def exe_swap_request(argstokens:list):
         cursor.close()
         
     print("command executed")      
-    
+
+#Cancel all student requests   
 def exe_swap_cancel_request(argstokens:list):
-    print("exe_swap_cancel_request")
+    global _Conn
+    cursor = _Conn.cursor()
+    sqlstmt = "sp_cancel_request_student"
+    cursor.execute(sqlstmt)
+    cursor.commit()
+    cursor.close()
+    print("command executed")      
 
 #Execute  a swap request (registar only)    
 def exe_swap(argstokens:list):
@@ -128,7 +136,7 @@ def show_command(argstokens:list):
         return
     
     login(argstokens)
-    entities =  {"sections":"fn_section()","courses":"fn_course()","students":"fn_student()","requests":"fn_exchangerequest()","enrollments":"fn_enrollment()","matches":"fn_match()"  }
+    entities =  {"sections":"fn_section()","courses":"fn_course()","students":"fn_student()","requests":"fn_exchangerequest()","enrollments":"fn_enrollment()","matches":"fn_match()","lessons":"fn_lesson()" }
     entity = argstokens[1]
     if entity not in entities.keys():
         print(entity + " is not a valid argument to the show command")
@@ -137,6 +145,14 @@ def show_command(argstokens:list):
     
     #Query the entity and display the result    
     query = "select * from   " +   entities[entity]
+    if(entity == "lessons"):
+        if(len(argstokens) < 3) :
+            print("invalid show lessons command")
+            help_command_show(argstokens)
+            return
+        else:
+            query = "select * from fn_lesson( " +  argstokens[2] + ")"
+            
     df = read_sql(query,_Conn)
     DisplyTable(df)   
      
