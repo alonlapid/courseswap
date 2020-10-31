@@ -167,7 +167,7 @@ print("Wellcome to section swapper! Please type a command ")
 while(True):    
     print(">>")  
     theinput=input()
-    argstokens = theinput.split(' ')
+    argstokens = theinput.split()
     command = argstokens[0]
     if command not in commands.keys():
         print("invalid command")
