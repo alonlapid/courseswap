@@ -81,13 +81,20 @@ def exe_swap_request(argstokens:list):
         cursor.execute(sqlstmt)
         cursor.commit()
         cursor.close()
-         
+        
+    print("command executed")      
     
 def exe_swap_cancel_request(argstokens:list):
     print("exe_swap_cancel_request")
     
 def exe_swap(argstokens:list):
-    print("exe_swap")
+    global _Conn
+    cursor = _Conn.cursor()
+    sqlstmt = "sp_swap"
+    cursor.execute(sqlstmt)
+    cursor.commit()
+    cursor.close()
+    print("command executed")      
     
 def execute_command(argstokens:list):
     global _Conn
@@ -116,7 +123,6 @@ def show_command(argstokens:list):
     login(argstokens)
     entities =  {"sections":"fn_section()","courses":"fn_course()","students":"fn_student()","requests":"fn_exchangerequest()","enrollments":"fn_enrollment()","matches":"fn_match()"  }
     entity = argstokens[1]
-    print("entity = " + entity)
     if entity not in entities.keys():
         print(entity + " is not a valid argument to the show command")
         help_command_show(argstokens)
