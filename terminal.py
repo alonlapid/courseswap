@@ -57,7 +57,7 @@ def help_command_show(argstokens:list):
     print("show <sections|courses|students|requests|enrollments|lessons>")
     print("show sections - presents the sections available in this symester ")
     print("show courses - presents the list of courses")
-    print("show students - presents the listof students")
+    print("show students - presents the list of students")
     print("show requests - presents the pending exchange requests")
     print("show enrollments - presents the current student enrollments")
     print("show matches - presents the matching exchange requests")
