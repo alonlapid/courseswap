@@ -54,7 +54,7 @@ def help_command_exe(argstokens:list):
 #Help menu for show  command
 def help_command_show(argstokens:list):          
     print("usage: ")
-    print("show <sections|courses|students|requests|enrollments|lessons>")
+    print("show <sections|courses|students|requests|enrollments|lessons|credits|prereqs>")
     print("show sections - presents the sections available in this symester ")
     print("show courses - presents the list of courses")
     print("show students - presents the list of students")
@@ -62,6 +62,9 @@ def help_command_show(argstokens:list):
     print("show enrollments - presents the current student enrollments")
     print("show matches - presents the matching exchange requests")
     print("show lessons <section id> - presents the lessons for a section")
+    print("show credits - presents the courses the student completed")
+    print("show prereqs - presents the prerequisites for each course")
+    
 
 #Login to the remote SQL Server
 def login(argstokens:list):
@@ -144,7 +147,7 @@ def show_command(argstokens:list):
         return
     
     login(argstokens)
-    entities =  {"sections":"fn_section()","courses":"fn_course()","students":"fn_student()","requests":"fn_exchangerequest()","enrollments":"fn_enrollment()","matches":"fn_match()","lessons":"fn_lesson()" }
+    entities =  {"sections":"fn_section()","courses":"fn_course()","students":"fn_student()","requests":"fn_exchangerequest()","enrollments":"fn_enrollment()","matches":"fn_match()","lessons":"fn_lesson()","credits":"fn_credit()","prereqs":"fn_prerequisite()" }
     entity = argstokens[1]
     if entity not in entities.keys():
         print(entity + " is not a valid argument to the show command")
