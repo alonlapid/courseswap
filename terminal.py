@@ -49,7 +49,7 @@ def help_command_exe(argstokens:list):
     print("exe <request|swap|cancell>  [options] ")
     print("exe request <section id to drop > <section id to join>  - request to exchange sections ")
     print("exe cancel - cancel student pending exchange requets  ")
-    print("exe swap - swap sections of maching requests (registar only) ")
+    print("exe swap - swap sections of maching requests (registrar only) ")
 
 #Help menu for show  command
 def help_command_show(argstokens:list):          
@@ -106,7 +106,7 @@ def exe_swap_cancel_request(argstokens:list):
     cursor.close()
     print("command executed")      
 
-#Execute  a swap request (registar only)    
+#Execute  a swap request (registrar only)    
 def exe_swap(argstokens:list):
     global _Conn
     cursor = _Conn.cursor()
