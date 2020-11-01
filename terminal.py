@@ -169,7 +169,7 @@ def exit_command(argstokens:list):
     sys.exit()
 
 commands =  {"help": help_command,"exit":exit_command,"show":show_command,"exe":execute_command  }
-print("Wellcome to section swapper! Please type a command ")  
+print("Wellcome to the section swapper! Please type a command ")  
 
 #Main terminal loop - reading the user commands and executing them    
 while(True):    
