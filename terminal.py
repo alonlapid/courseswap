@@ -54,16 +54,17 @@ def help_command_exe(argstokens:list):
 #Help menu for show  command
 def help_command_show(argstokens:list):          
     print("usage: ")
-    print("show <sections|courses|students|requests|enrollments|lessons|credits|prereqs>")
-    print("show sections - presents the sections available in this symester ")
-    print("show courses - presents the list of courses")
-    print("show students - presents the list of students")
-    print("show requests - presents the pending exchange requests")
-    print("show enrollments - presents the current student enrollments")
-    print("show matches - presents the matching exchange requests")
-    print("show lessons <section id> - presents the lessons for a section")
-    print("show credits - presents the courses the student completed")
-    print("show prereqs - presents the prerequisites for each course")
+    print("show <sections|courses|students|requests|enrollments|lessons|credits|prereqs> [filter]")
+    print("show sections [filter] - presents the sections available in this symester ")
+    print("show courses [filter]- presents the list of courses")
+    print("show students [filter] - presents the list of students")
+    print("show requests [filter] - presents the pending exchange requests")
+    print("show enrollments [filter] - presents the current student enrollments")
+    print("show matches [filter] - presents the matching exchange requests")
+    print("show lessons [filter] - presents the lessons for a section")
+    print("show credits [filter] - presents the courses the student completed")
+    print("show prereqs [filter] - presents the prerequisites for each course")
+    print("filter is  a condition to filter the result. The syntax of a where clause is supported")
     
 
 #Login to the remote SQL Server
