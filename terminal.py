@@ -88,6 +88,7 @@ def exe_swap_request(argstokens:list):
     if(len(argstokens) != 4):
          print("invalid arguments to swap request command")
          help_command_exe(argstokens)
+         return
     else:
         cursor = _Conn.cursor()
         remove_section = argstokens[2]
