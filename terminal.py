@@ -139,6 +139,14 @@ def execute_command(argstokens:list):
     #Run the command
     actions[action](argstokens)
 
+def combin_arguments(argstokens:list, fromindex:int):
+    ret = "";    
+    for i in range(fromindex,len(argstokens)):
+        ret = ret + argstokens[i] + " "
+    
+    
+    return ret    
+
 #Entry point for the show command              
 def show_command(argstokens:list):
     global _Conn
@@ -157,14 +165,10 @@ def show_command(argstokens:list):
     
     #Query the entity and display the result    
     query = "select * from   " +   entities[entity]
-    if(entity == "lessons"):
-        if(len(argstokens) < 3) :
-            print("invalid show lessons command")
-            help_command_show(argstokens)
-            return
-        else:
-            query = "select * from fn_lesson( " +  argstokens[2] + ")"
-            
+    if(len(argstokens) >= 3):
+        query = query +" where " + combin_arguments(argstokens,2)
+        
+                
     df = read_sql(query,_Conn)
     DisplyTable(df)   
      
