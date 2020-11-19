@@ -157,7 +157,7 @@ def show_command(argstokens:list):
         return
     
     login(argstokens)
-    entities =  {"sections":"fn_section()","courses":"fn_course()","students":"fn_student()","requests":"fn_exchangerequest()","enrollments":"fn_enrollment()","matches":"fn_match()","lessons":"fn_lesson()","credits":"fn_credit()","prereqs":"fn_prerequisite()" }
+    entities =  {"sections":"fn_section()","courses":"fn_course()","students":"fn_student()","requests":"fn_exchangerequest()","enrollments":"fn_enrollment()","matches":"fn_match()","lessons":"fn_lesson()","credits":"fn_credit()","prereqs":"fn_prerequisite()","schedule":"fn_schedule_student()"}
     entity = argstokens[1]
     if entity not in entities.keys():
         print(entity + " is not a valid argument to the show command")
