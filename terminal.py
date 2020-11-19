@@ -64,6 +64,7 @@ def help_command_show(argstokens:list):
     print("show lessons [filter] - presents the lessons for a section")
     print("show credits [filter] - presents the courses the student completed")
     print("show prereqs [filter] - presents the prerequisites for each course")
+    print("show schedule [filter] - presents the schedule for the current user")
     print("filter is  a condition to filter the result. The syntax of a where clause is supported")
     
 
