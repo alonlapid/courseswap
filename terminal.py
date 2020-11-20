@@ -64,6 +64,7 @@ def help_command_show(argstokens:list):
     print("show lessons [filter] - presents the lessons for a section")
     print("show credits [filter] - presents the courses the student completed")
     print("show prereqs [filter] - presents the prerequisites for each course")
+    print("show schedule [filter] - presents the schedule for the current user")
     print("filter is  a condition to filter the result. The syntax of a where clause is supported")
     
 
@@ -157,7 +158,7 @@ def show_command(argstokens:list):
         return
     
     login(argstokens)
-    entities =  {"sections":"fn_section()","courses":"fn_course()","students":"fn_student()","requests":"fn_exchangerequest()","enrollments":"fn_enrollment()","matches":"fn_match()","lessons":"fn_lesson()","credits":"fn_credit()","prereqs":"fn_prerequisite()" }
+    entities =  {"sections":"fn_section()","courses":"fn_course()","students":"fn_student()","requests":"fn_exchangerequest()","enrollments":"fn_enrollment()","matches":"fn_match()","lessons":"fn_lesson()","credits":"fn_credit()","prereqs":"fn_prerequisite()","schedule":"fn_schedule_student()"}
     entity = argstokens[1]
     if entity not in entities.keys():
         print(entity + " is not a valid argument to the show command")
