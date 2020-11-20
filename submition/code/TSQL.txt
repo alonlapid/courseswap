@@ -1,0 +1,470 @@
+-- check if the current user has access to the information of a given student id (either the student itself or the admin)
+CREATE  FUNCTION [dbo].[fn_canaccess](@sid int)  
+RETURNS int   
+AS   
+  
+BEGIN  
+   declare @username nvarchar(256) 
+   declare @ret int
+   set @ret =0;
+   set @username = (select Name from Student where SID = @sid)
+   if(@username = CURRENT_USER or  IS_ROLEMEMBER ('db_owner') =1 )
+        set @ret = 1
+
+   RETURN @ret;       
+END; 
+
+GO
+
+-- return the hour part of the hour column
+CREATE  FUNCTION [dbo].[fn_gethour](@hour real)  
+RETURNS varchar(10)   
+AS   
+  
+BEGIN  
+   declare @index int
+   declare @hourstr varchar(10)
+   set @hourstr = cast(@hour as varchar(10))
+   set @index = charindex('.',@hourstr);
+   if @index = 0 
+    return trim(@hourstr)
+   
+   return substring(@hourstr,1,@index-1)       
+END; 
+GO
+
+-- return the minutes part of the hour column
+CREATE   FUNCTION [dbo].[fn_getmin](@hour real)  
+RETURNS varchar(10)   
+AS   
+  
+BEGIN  
+   declare @index int
+   declare @hourstr varchar(10)
+   declare @minstr varchar(10)
+   declare @minval real
+   set @hourstr = cast(@hour as varchar(10))
+   set @index = charindex('.',@hourstr);
+   if @index = 0 
+    return '00'
+   
+   set @minstr = substring(@hourstr,@index+1,len(@hourstr)- @index)   
+   if(len (@minstr) = 1)
+     set @minstr = @minstr  +'0'
+
+    set @minval = cast(@minstr as real)
+    if(@minval = 0)
+        return '00'
+
+    return cast (@minval * 60 /100 as varchar(10))
+
+END; 
+
+
+
+
+-- list the lessons for a student assuming he\she drops @remove_secid and enroll to  @add_secid
+CREATE  FUNCTION [dbo].[fn_newlesson] (@sid int,@remove_secid int, @add_secid int)
+RETURNS TABLE
+AS
+RETURN
+(   
+        select 
+        course.CID,Lesson.* from Lesson 
+        inner join Section on Section.SECID = Lesson.SECID
+        inner join EnrolLment on Section.SECID = EnrolLment.SECID
+        inner join Student  on Enrollment.SID = Student.SID 
+        inner join course on course.CID = Section.CID 
+        where Section.SECID != @remove_secid   and Student.SID = @sid
+        and EnrolLment.Completed = 0 and  dbo.fn_canaccess(@sid ) =1
+
+        union all 
+        select course.CID,Lesson.* from Lesson 
+        inner join Section on Section.SECID = Lesson.SECID
+        inner join course on course.CID = Section.CID 
+        where Section.SECID = @add_secid
+        and   dbo.fn_canaccess(@sid ) =1
+);
+
+
+-- return list of time conflicting lessons if student @sid will drop  @remove_secid section
+-- and enroll to section @add_secid
+CREATE  FUNCTION [dbo].[fn_timeconflict] (@sid int,@remove_secid int, @add_secid int)
+RETURNS TABLE
+AS
+RETURN
+(
+   select L1.CID AS Course1,L1.Day  AS Lesson1_Day, L1.Hour AS Lesson1_Hour,L1.LengthInMin as Lesson1_LengthInMin ,
+          L2.CID AS Course2,L2.Day  AS Lesson2_Day, L2.Hour AS Lesson2_Hour,L2.LengthInMin as Lesson2_LengthInMin 
+   from fn_newlesson(@sid,@remove_secid , @add_secid) AS L1 
+   inner join fn_newlesson(@sid,@remove_secid , @add_secid)  as L2 on L1.SECID != L2.SECID
+   WHERE L1.day = L2.day 
+    and 
+    (
+        (L1.Hour  >= l2.Hour and L1.Hour < L2.Hour + cast (L2.LengthInMin as real)/60  )     or 
+        (L1.Hour + cast (L1.LengthInMin as real)/60  >= l2.Hour and L1.Hour + cast (L1.LengthInMin as real)/60   < L2.Hour + cast (L2.LengthInMin as real)/60  )     or
+        (L2.Hour  >= l1.Hour and L2.Hour < L1.Hour + cast (L1.LengthInMin as real)/60  )    or
+        (L2.Hour + cast (L2.LengthInMin as real)/60  >= l1.Hour and L2.Hour + cast (L2.LengthInMin as real)/60   < L1.Hour + cast (L1.LengthInMin as real)/60  ) 
+    )
+    and   dbo.fn_canaccess(@sid ) =1
+);
+
+
+--return the full list of lessons 
+CREATE FUNCTION [dbo].[fn_lesson] ()
+RETURNS TABLE
+AS
+RETURN
+(    
+        select 
+        Section.SECID,Section.Name AS SectionName,Section.CID AS Course,Instructor, Location,Day,dbo.fn_gethour(hour) + ':' + dbo.fn_getmin(hour) AS [Time],LengthInMin from Lesson 
+        inner join Section on Lesson.SECID = Section.SECID 
+        inner join Course on Course.CID = Section.CID         
+);
+
+-- return list of enrollments for the current student (or all students if called by the admin)
+CREATE FUNCTION [dbo].[fn_enrollment] ()
+RETURNS TABLE
+AS
+RETURN
+  SELECT student.SID , student.name as StudentName,Course.Name as CourseName,Course.CID,Section.SECID  AS SECID, Section.Name AS SectionName,Section.Instructor, Completed from enrollment 
+  INNER JOIN Section on Enrollment.SECID = Section.SECID 
+  INNER JOIN Course on Course.CID = Section.CID
+  INNER JOIN student on student.SID = Enrollment.SID
+  where completed = 0 
+  and dbo.fn_canaccess(student.SID ) =1
+
+
+
+
+-- list the lessons for the current student 
+CREATE FUNCTION [dbo].[fn_schedule_student] ()
+RETURNS TABLE
+AS
+RETURN(    
+       
+        select L.* from fn_lesson() as L
+        inner join fn_enrollment()  AS E On E.SECID = L.SECID
+        inner join(select sid from student where CURRENT_USER = name) AS S ON S.sid = E.sid
+);
+
+
+-- return the list of courses
+CREATE FUNCTION [dbo].[fn_course] ()
+RETURNS TABLE
+AS
+RETURN
+(
+  SELECT * from course
+);
+
+-- Given sid and cid return the violations of the course pre requesit by the student if he\she 
+-- enrollS to it
+CREATE FUNCTION [dbo].[fn_courseviolation] (@sid int,@cid nvarchar(256))
+RETURNS TABLE
+AS
+RETURN
+(   
+    select MUSTCID AS PreconditionCourse from Prerequisite where CID = @cid
+    and MUSTCID not 
+    in( SELECT CID from Enrollment inner join Section on Section.SECID = Enrollment.SECID where Completed = 1 and SID = @sid)    
+    and dbo.fn_canaccess(@sid ) =1
+);
+
+
+-- returned to completed course for the current student 
+CREATE FUNCTION [dbo].[fn_credit] ()
+RETURNS TABLE
+AS
+RETURN
+(
+  SELECT student.name as StudentName,Course.Name as CourseName,Course.CID from enrollment 
+  INNER JOIN Section on Enrollment.SECID = Section.SECID 
+  INNER JOIN Course on Course.CID = Section.CID
+  INNER JOIN student on student.SID = Enrollment.SID
+  where completed = 1 
+  and dbo.fn_canaccess(student.SID ) =1
+);
+
+
+--list the pending exchange requests (hide sids of other students)
+CREATE  FUNCTION [dbo].[fn_exchangeRequest] ()
+RETURNS TABLE
+AS
+RETURN
+-- view all exchange requests  but hide the sids if not admin
+  select (case WHEN dbo.fn_canaccess(SID ) = 1 then SID else null END)AS SID , 
+  SECID_Src AS SECID_OUT,SEC1.Name AS SectionName_OUT,SECID_Dest AS SECID_IN,SEC2.Name AS SectionName_IN,RequestTime , IsActive
+  from ExchangeRequest as E 
+  inner join Section as SEC1 ON SEC1.SECID = E.SECID_Src
+  inner join Section as SEC2 ON SEC2.SECID = E.SECID_Dest
+  where IsActive = 1
+
+-- return list of matches out of the pending exchange requests
+CREATE  FUNCTION [dbo].[fn_match] ()
+RETURNS TABLE
+AS
+RETURN
+(
+   select S1.Name AS Student1, E1.SID AS SID1, C1.CID AS Course_IN ,E2.SECID_Src as Section_IN ,
+          C2.CID AS Course_OUT,E1.SECID_Src as Section_OUT,S2.Name AS Student2,E2.SID AS SID2
+   from ExchangeRequest as E1 
+   inner join ExchangeRequest as E2 on E1.SID > E2.SID and E1.SECID_Src = E2.SECID_Dest and  E2.SECID_Src = E1.SECID_Dest
+   inner join Student AS S1 on E1.SID = S1.SID
+   inner join Student AS S2 on E2.SID = S2.SID
+   inner join Section AS SEC1 on E1.SECID_Src = SEC1.SECID
+   inner join Section AS SEC2 on E2.SECID_Src = SEC2.SECID
+   inner join Course AS C1 on C1.CID = SEC1.CID
+   inner join Course AS C2 on C2.CID = SEC2.CID
+   where E1.IsActive = 1 AND E2.IsActive = 1 
+);
+
+-- list the Prerequisites for courses 
+CREATE FUNCTION [dbo].[fn_prerequisite] ()
+RETURNS TABLE
+AS
+RETURN
+(    
+        SELECT CID AS Course,MUSTCID AS [Prerequisite Course] from Prerequisite
+);
+
+-- list all sections
+CREATE FUNCTION [dbo].[fn_Section] ()
+RETURNS TABLE
+AS
+RETURN
+(    
+        SELECT SECID,Section.CID As Course,SemesterName,SemesterYear,Instructor ,Section.Name,Area,Campus from  Section,Course
+        where Section.CID = Course.CID
+);
+
+
+
+-- list all students
+CREATE FUNCTION [dbo].[fn_student] ()
+RETURNS TABLE
+AS
+RETURN
+(
+  SELECT * from student
+);
+
+
+-- cancell requests of  a student - can be called by the admin to cancel request of any student
+CREATE PROC [dbo].[sp_cancel_request] @sid int
+AS   
+    BEGIN
+        -- check permisions 
+        IF(dbo.fn_canaccess (@sid ) = 0)
+            BEGIN
+			   THROW 51000, 'You dont have the permission to perform the operation', 1
+               RETURN
+            END
+
+         update  ExchangeRequest set IsActive  = 0 where SID = @sid 
+    END      
+
+ -- this SP calls sp_cancel_reques after getting the student id of the calling user
+CREATE PROC [dbo].[sp_cancel_request_student] 
+AS  
+    BEGIN
+		declare @sid int 
+		set @sid = (select sid from Student where name = CURRENT_USER)   
+		if(@sid is null)
+		BEGIN
+			THROW 51000, 'There is no student record for the database user', 1
+			return
+		END
+
+    exec sp_cancel_request @sid
+         
+    END      
+
+
+-- reuest to change sections
+-- @sid - the requsting student 
+-- @remove_secid - section to move out from 
+-- @add_secid - section to add
+CREATE PROC [dbo].[sp_exchange_request] @sid int, @remove_secid int,@add_secid int
+AS
+    BEGIN
+        DECLARE @timeconflicts int;
+        DECLARE @cid nvarchar(256); 
+        DECLARE @cid2 nvarchar(256); 
+        DECLARE @anyrecord int;
+		DECLARE @errmsg nvarchar(256);
+
+        -- grab the courses for the sections
+        SET  @cid   = (select CID from Section where SECID = @add_secid );
+        SET  @cid2   = (select CID from Section where SECID = @remove_secid );
+
+        -- check premisions - only admin can run this code
+        IF(dbo.fn_canaccess (@sid ) = 0)
+            BEGIN
+			   THROW 51000, 'You dont have the permission to perfom the operation', 1
+                RETURN
+            END
+
+        -- Prevent mutiple exchangeb request for the same user
+        SET  @anyrecord   = (select count(*) from ExchangeRequest where SID = @sid and IsActive=1); 
+        IF (@anyrecord > 0)
+            BEGIN
+			      THROW 51000, 'Exchange request failed because the student already has an active request', 1
+               --RAISERROR(N'Exchange request failed because the student already has an active request' , 1, 16)
+               RETURN
+            END
+        
+        -- Prevent exchanging a section the student is not enrolled in
+        SET  @anyrecord   = (select count(*) from Enrollment where SID = @sid and SECID =  @remove_secid and Completed=0); 
+        IF (@anyrecord = 0)
+            BEGIN
+			    set @errmsg = 'Exchange request failed because the student is not enrolled to the section they want to give up' ;
+			    THROW 51000,@errmsg , 1
+                 RETURN
+            END
+
+        -- Prevent getting into a section that does not exist 
+        SET  @anyrecord   = (select count(*) from Section where SECID =  @add_secid );      
+        IF (@anyrecord  = 0)
+            BEGIN
+			     THROW 51000, 'Exchange request failed because the requested section does not exist', 1               
+                 RETURN
+            END
+        
+        -- Prevent getting into a section the student is already  enrolled to 
+        SET  @anyrecord   = (select count(*) from Enrollment where SECID =  @add_secid and Completed = 0 and SID = @sid);      
+        IF (@anyrecord  > 0)
+            BEGIN
+			    THROW 51000, 'Exchange request failed because the the student is already enrolled to section they want to join', 1                
+                RETURN
+            END
+        
+        -- Prevent getting into a section the student if the student already completed  this course
+         SET  @anyrecord   = (select count(*) from Enrollment inner join section  on  Enrollment.SECID =  section.SECID where section.CID =  @cid and Enrollment.Completed = 1 and SID = @sid);      
+        IF (@anyrecord  > 0)
+            BEGIN
+			    THROW 51000, 'Exchange request failed because the the student already completed the course', 1                    
+                RETURN
+            END
+
+        -- Prevent time conflict 
+        SET @timeconflicts = 
+        (
+            SELECT 
+            COUNT(*) FROM 
+            fn_timeconflict(@sid,@remove_secid,@add_secid)
+        ) 
+        IF (@timeconflicts > 0)
+            BEGIN
+			  THROW 51000, 'Exchange request failed because of a time conflict', 1  
+             
+              RETURN
+            END
+            
+        ELSE
+        BEGIN 
+            DECLARE @courseconflict int;
+            SET @courseconflict =  (SELECT COUNT(*) FROM  fn_courseviolation(@sid,@cid));            
+
+             -- Prevent pre requisite violation             
+            IF (@courseconflict > 0)
+            BEGIN
+			  THROW 51000, 'Exchange request failed because the student did not have one or more a prerequisite to the course', 1  
+             
+              RETURN
+            END
+            ELSE 
+            BEGIN 
+               insert into ExchangeRequest (SID,SECID_Src,SECID_Dest,RequestTime,IsActive) values(@sid,@remove_secid,@add_secid,GETDATE(),1)
+               select * from ExchangeRequest where SID = @sid and IsActive = 1
+               print 'Exchange request was stored in the database';
+            END
+        END
+    END        
+
+
+CREATE  PROC [dbo].[sp_exchange_request_student]  @remove_secid int,@add_secid int
+AS
+    -- this function calls sp_exchange_request after getting the student id of the calling user
+    BEGIN
+	 
+	 declare @sid int 
+     set @sid = (select sid from Student where name = CURRENT_USER)   
+	 if(@sid is null)
+	 BEGIN
+		THROW 51000, 'There is no student record for the database user', 1
+		return
+     END
+
+    exec sp_exchange_request @sid,@remove_secid , @add_secid
+         
+    END      
+
+-- execute all the matching requests 
+CREATE PROC [dbo].[sp_swap] 
+AS
+    BEGIN
+   
+    declare @history nvarchar(max);
+    set @history = ''
+    
+        declare @SID1 int
+        declare @SID2 int
+        declare @Section_IN int
+        declare @Section_OUT int
+
+        -- Security check 
+        IF(IS_ROLEMEMBER ('db_owner')  = 0)
+            BEGIN
+			    THROW 51000, 'You dont have the permission to perfom the operation', 1
+                RETURN
+            END
+        
+         -- Get all matches and  save them into a temp table 
+        select * into #tempmatch  from fn_match()
+
+         -- Declare and open cursor over the matches 
+        DECLARE match CURSOR FOR SELECT SID1, SID2,Section_IN,Section_OUT from #tempmatch
+        OPEN match;
+
+        -- Go over the matches record by record      
+        FETCH NEXT FROM match INTO 
+                @SID1, 
+                @SID2,
+                @Section_IN,
+                @Section_OUT 
+
+        WHILE @@FETCH_STATUS = 0        
+
+            BEGIN
+                    --Make sure we skip students we already processed    
+                    print('the history' + @history) 
+                    IF( CHARINDEX(CAST(@SID1 AS varchar),@history) = 0 and  CHARINDEX(CAST(@SID2 AS varchar),@history) = 0  )
+                    BEGIN 
+                    --swap the sections between students in a transaction, mark thr request as processed 
+                        BEGIN  TRAN
+                        PRINT 'Swaping Section for students ' +  CAST(@SID1 AS varchar) + ',' +CAST(@SID2 AS varchar) +   ', Section ' +  CAST(@Section_OUT AS varchar) + ' for ' + CAST(@Section_IN AS varchar)
+                        update Enrollment set SECID = @Section_IN, EnrollmentTime = GETDATE() WHERE SECID = @Section_OUT AND SID = @SID1 
+                        update Enrollment set SECID = @Section_Out, EnrollmentTime = GETDATE() WHERE SECID = @Section_IN AND SID = @SID2                            
+                        update ExchangeRequest set  IsActive = 0 where SID in  (@SID1 ,@SID2) and IsActive = 1        
+                         -- Add the students to the list of processed students.     
+                        set @history = @history + CAST(@SID1 AS varchar) + ',' + CAST(@SID2 AS varchar)              
+                        COMMIT                       
+
+                    END  
+
+                   
+                    
+                        --Read next matching record
+                        FETCH NEXT FROM match INTO 
+                            @SID1, 
+                            @SID2,
+                            @Section_IN,
+                            @Section_OUT 
+                            
+            END;        
+            close match
+            DEALLOCATE match                
+             
+    END    
+
