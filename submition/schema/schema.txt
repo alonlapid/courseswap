@@ -1,0 +1,173 @@
+/****** Object:  User [Alon]    Script Date: 11/20/2020 12:29:08 PM ******/
+CREATE USER [Alon] FOR LOGIN [Alon] WITH DEFAULT_SCHEMA=[dbo]
+GO
+
+/****** Object:  User [Kristine]    Script Date: 11/20/2020 12:29:08 PM ******/
+CREATE USER [Kristine] FOR LOGIN [Kristine] WITH DEFAULT_SCHEMA=[dbo]
+GO
+
+
+/****** Object:  User [registrar]    Script Date: 11/20/2020 12:29:08 PM ******/
+CREATE USER [registrar] FOR LOGIN [registrar] WITH DEFAULT_SCHEMA=[dbo]
+GO
+/****** Object:  User [Sam]    Script Date: 11/20/2020 12:29:08 PM ******/
+CREATE USER [Sam] FOR LOGIN [Sam] WITH DEFAULT_SCHEMA=[dbo]
+GO
+
+sys.sp_addrolemember @rolename = N'db_owner', @membername = N'registar'
+GO
+
+/****** Object:  Table [dbo].[Course]    Script Date: 11/20/2020 12:29:11 PM ******/
+GO
+CREATE TABLE [dbo].[Course](
+	[Name] [nvarchar](256) NULL,
+	[CID] [nvarchar](256) NOT NULL,
+	[Points] [real] NULL,
+	[Department] [nvarchar](256) NULL,
+	[Area] [nvarchar](256) NULL,
+	[Campus] [nvarchar](256) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[CID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Enrollment]    Script Date: 11/20/2020 12:29:11 PM ******/
+GO
+CREATE TABLE [dbo].[Enrollment](
+	[EID] [int] IDENTITY(1,1) NOT NULL,
+	[SID] [int] NULL,
+	[SECID] [int] NULL,
+	[Completed] [int] NULL,
+	[EnrollmentTime] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[EID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[SECID] ASC,
+	[SID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ExchangeRequest]    Script Date: 11/20/2020 12:29:11 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ExchangeRequest](
+	[RID] [int] IDENTITY(1,1) NOT NULL,
+	[SID] [int] NULL,
+	[SECID_Src] [int] NULL,
+	[SECID_Dest] [int] NULL,
+	[RequestTime] [datetime] NULL,
+	[IsActive] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[RID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Lesson]    Script Date: 11/20/2020 12:29:11 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Lesson](
+	[SECID] [int] NULL,
+	[Location] [nvarchar](256) NULL,
+	[Day] [char](10) NULL,
+	[Hour] [real] NULL,
+	[LengthInMin] [int] NULL,
+UNIQUE NONCLUSTERED 
+(
+	[SECID] ASC,
+	[Day] ASC,
+	[Hour] ASC,
+	[Location] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Prerequisite]    Script Date: 11/20/2020 12:29:11 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Prerequisite](
+	[CID] [nvarchar](256) NOT NULL,
+	[MUSTCID] [nvarchar](256) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[CID] ASC,
+	[MUSTCID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Section]    Script Date: 11/20/2020 12:29:11 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Section](
+	[SECID] [int] NOT NULL,
+	[CID] [nvarchar](256) NULL,
+	[SemesterName] [nvarchar](256) NULL,
+	[SemesterYear] [int] NULL,
+	[Instructor] [nvarchar](256) NULL,
+	[Name] [nvarchar](256) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[SECID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Student]    Script Date: 11/20/2020 12:29:11 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Student](
+	[SID] [int] NOT NULL,
+	[Name] [nvarchar](256) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[SID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[Enrollment]  WITH CHECK ADD FOREIGN KEY([SECID])
+REFERENCES [dbo].[Section] ([SECID])
+GO
+ALTER TABLE [dbo].[Enrollment]  WITH CHECK ADD FOREIGN KEY([SID])
+REFERENCES [dbo].[Student] ([SID])
+GO
+ALTER TABLE [dbo].[ExchangeRequest]  WITH CHECK ADD FOREIGN KEY([SECID_Dest])
+REFERENCES [dbo].[Section] ([SECID])
+GO
+ALTER TABLE [dbo].[ExchangeRequest]  WITH CHECK ADD FOREIGN KEY([SECID_Src])
+REFERENCES [dbo].[Section] ([SECID])
+GO
+ALTER TABLE [dbo].[ExchangeRequest]  WITH CHECK ADD FOREIGN KEY([SID])
+REFERENCES [dbo].[Student] ([SID])
+GO
+ALTER TABLE [dbo].[Lesson]  WITH CHECK ADD FOREIGN KEY([SECID])
+REFERENCES [dbo].[Section] ([SECID])
+GO
+ALTER TABLE [dbo].[Prerequisite]  WITH CHECK ADD FOREIGN KEY([MUSTCID])
+REFERENCES [dbo].[Course] ([CID])
+GO
+ALTER TABLE [dbo].[Prerequisite]  WITH CHECK ADD FOREIGN KEY([CID])
+REFERENCES [dbo].[Course] ([CID])
+GO
+ALTER TABLE [dbo].[Section]  WITH CHECK ADD FOREIGN KEY([CID])
+REFERENCES [dbo].[Course] ([CID])
+GO
+ALTER TABLE [dbo].[Enrollment]  WITH CHECK ADD CHECK  (([Completed]=(0) OR [Completed]=(1)))
+GO
+ALTER TABLE [dbo].[Lesson]  WITH CHECK ADD CHECK  (([Day]='Sat' OR [Day]='Fri' OR [Day]='Thu' OR [Day]='Wed' OR [Day]='Tue' OR [Day]='Mon' OR [Day]='Sun'))
+GO
+ALTER TABLE [dbo].[Lesson]  WITH CHECK ADD CHECK  (([Hour]>=(0.0) AND [Hour]<(24.0)))
+GO
+ALTER TABLE [dbo].[Lesson]  WITH CHECK ADD CHECK  (([LengthInMin]>(0) AND [LengthInMin]<(120)))
+GO
