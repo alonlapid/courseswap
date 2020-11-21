@@ -12,7 +12,7 @@ import re
 #Global connection to the database
 _Conn = None
 
-#Display nicly a dataframe
+#Display nicely a dataframe
 def DisplyTable(df ):
     print(tabulate(df, headers='keys', tablefmt='psql'))
 
