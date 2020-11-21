@@ -196,7 +196,7 @@ while(True):
     try:
         handle_command(argstokens)
     except SystemExit:
-       sys.exit("User requsted exit")   
+       sys.exit("")   
     except pyodbc.ProgrammingError as e:
         print(FormatError(str(e)))
         continue
