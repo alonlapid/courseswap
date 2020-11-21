@@ -187,18 +187,21 @@ RETURN
 );
 
 
---list the pending exchange requests (hide sids of other students)
-CREATE  FUNCTION [dbo].[fn_exchangeRequest] ()
+
+--list the pending exchange requests for the student
+ALTER  FUNCTION [dbo].[fn_exchangeRequest] ()
 RETURNS TABLE
 AS
 RETURN
 -- view all exchange requests  but hide the sids if not admin
-  select (case WHEN dbo.fn_canaccess(SID ) = 1 then SID else null END)AS SID , 
+  select  SID , 
   SECID_Src AS SECID_OUT,SEC1.Name AS SectionName_OUT,SECID_Dest AS SECID_IN,SEC2.Name AS SectionName_IN,RequestTime , IsActive
   from ExchangeRequest as E 
   inner join Section as SEC1 ON SEC1.SECID = E.SECID_Src
   inner join Section as SEC2 ON SEC2.SECID = E.SECID_Dest
-  where IsActive = 1
+  where IsActive = 1 and dbo.fn_canaccess(SID ) = 1
+GO
+
 
 -- return list of matches out of the pending exchange requests
 CREATE  FUNCTION [dbo].[fn_match] ()
